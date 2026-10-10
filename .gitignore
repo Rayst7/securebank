@@ -1,0 +1,27 @@
+﻿node_modules/
+dist/
+build/
+coverage/
+*.log
+
+# Variables y secretos
+.env
+.env.*
+!.env.example
+
+# React Native / Expo
+.expo/
+.expo-shared/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
