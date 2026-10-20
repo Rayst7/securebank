@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  INACTIVE
+}
+
+enum AccountStatus {
+  ACTIVE
+  BLOCKED
+  CLOSED
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER_IN
+  TRANSFER_OUT
+  PAYMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  firstName    String     @map("first_name") @db.VarChar(100)
+  lastName     String     @map("last_name") @db.VarChar(100)
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  role         UserRole   @default(CUSTOMER)
+  status       UserStatus @default(ACTIVE)
+
+  accounts      Account[]
+  beneficiaries Beneficiary[]
+  auditLogs     AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("users")
+}
+
+model Account {
+  id            String        @id @default(uuid()) @db.Uuid
+  accountNumber String        @unique @map("account_number") @db.VarChar(30)
+  balance       Decimal       @default(0) @db.Decimal(19, 2)
+  currency      String        @default("GTQ") @db.Char(3)
+  status        AccountStatus @default(ACTIVE)
+
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  transactions        Transaction[]
+  outgoingTransfers   Transfer[] @relation("TransferOrigin")
+  incomingTransfers   Transfer[] @relation("TransferDestination")
+  payments            Payment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("accounts")
+}
+
+model Beneficiary {
+  id            String   @id @default(uuid()) @db.Uuid
+  alias         String   @db.VarChar(100)
+  accountNumber String   @map("account_number") @db.VarChar(30)
+  bankName      String   @map("bank_name") @db.VarChar(100)
+
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("beneficiaries")
+}
+
+model Transfer {
+  id                   String         @id @default(uuid()) @db.Uuid
+  reference            String         @unique @default(uuid()) @db.Uuid
+  idempotencyKey       String         @map("idempotency_key") @db.VarChar(255)
+  amount               Decimal        @db.Decimal(19, 2)
+  currency             String         @default("GTQ") @db.Char(3)
+  status               TransferStatus @default(PENDING)
+  description          String?        @db.VarChar(255)
+
+  sourceAccountId      String         @map("source_account_id") @db.Uuid
+  destinationAccountId String         @map("destination_account_id") @db.Uuid
+
+  sourceAccount      Account @relation("TransferOrigin", fields: [sourceAccountId], references: [id], onDelete: Restrict)
+  destinationAccount Account @relation("TransferDestination", fields: [destinationAccountId], references: [id], onDelete: Restrict)
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([sourceAccountId, idempotencyKey])
+  @@index([sourceAccountId, createdAt])
+  @@index([destinationAccountId, createdAt])
+  @@index([status, createdAt])
+  @@map("transfers")
+}
+
+model Payment {
+  id               String        @id @default(uuid()) @db.Uuid
+  reference        String        @unique @default(uuid()) @db.Uuid
+  idempotencyKey   String        @map("idempotency_key") @db.VarChar(255)
+  serviceName      String        @map("service_name") @db.VarChar(120)
+  serviceReference String        @map("service_reference") @db.VarChar(100)
+  amount           Decimal       @db.Decimal(19, 2)
+  currency         String        @default("GTQ") @db.Char(3)
+  status           PaymentStatus @default(PENDING)
+
+  accountId String  @map("account_id") @db.Uuid
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([accountId, idempotencyKey])
+  @@index([accountId, createdAt])
+  @@index([status])
+  @@map("payments")
+}
+
+model Transaction {
+  id          String          @id @default(uuid()) @db.Uuid
+  type        TransactionType
+  amount      Decimal         @db.Decimal(19, 2)
+  currency    String          @default("GTQ") @db.Char(3)
+  description String?         @db.VarChar(255)
+
+  accountId String  @map("account_id") @db.Uuid
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  transferId String?   @map("transfer_id") @db.Uuid
+  transfer   Transfer? @relation(fields: [transferId], references: [id], onDelete: Restrict)
+
+  paymentId String?  @map("payment_id") @db.Uuid
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([accountId, createdAt])
+  @@index([transferId])
+  @@index([paymentId])
+  @@map("transactions")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  action    String   @db.VarChar(100)
+  entity    String   @db.VarChar(100)
+  entityId  String?  @map("entity_id") @db.VarChar(100)
+  details   Json?
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+
+  userId String? @map("user_id") @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
