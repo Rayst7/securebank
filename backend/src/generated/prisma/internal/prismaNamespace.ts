@@ -1042,6 +1042,7 @@ export type TransferScalarFieldEnum = (typeof TransferScalarFieldEnum)[keyof typ
 export const PaymentScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
+  idempotencyKey: 'idempotencyKey',
   serviceName: 'serviceName',
   serviceReference: 'serviceReference',
   amount: 'amount',
