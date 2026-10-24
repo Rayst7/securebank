@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons'
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 import {
   Pressable,
   StyleSheet,
   TextInput,
   View,
   type StyleProp,
+  type TextInputInstance,
   type TextInputProps,
   type ViewStyle,
 } from 'react-native'
@@ -19,17 +20,20 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   containerStyle?: StyleProp<ViewStyle>
 }
 
-export function Input({
-  label,
-  error,
-  hint,
-  containerStyle,
-  secureTextEntry,
-  multiline,
-  onFocus,
-  onBlur,
-  ...rest
-}: InputProps) {
+export const Input = forwardRef<TextInputInstance, InputProps>(function Input(
+  {
+    label,
+    error,
+    hint,
+    containerStyle,
+    secureTextEntry,
+    multiline,
+    onFocus,
+    onBlur,
+    ...rest
+  },
+  ref,
+) {
   const [focused, setFocused] = useState(false)
   const [hidden, setHidden] = useState(Boolean(secureTextEntry))
 
@@ -39,7 +43,15 @@ export function Input({
         {label}
       </AppText>
 
+      {/*
+        collapsable={false} evita que Fabric elimine y vuelva a crear este
+        contenedor al cambiar de estilo con el foco. Sin esto, el TextInput
+        pierde el foco y el teclado se cierra al instante (RN #45798).
+        Por la misma razón, el estado de foco solo cambia el borde: no se
+        deben aplicar sombras, elevación, opacidad ni transform aquí.
+      */}
       <View
+        collapsable={false}
         style={[
           styles.field,
           multiline && styles.fieldMultiline,
@@ -49,6 +61,7 @@ export function Input({
       >
         <TextInput
           {...rest}
+          ref={ref}
           multiline={multiline}
           secureTextEntry={secureTextEntry ? hidden : false}
           placeholderTextColor={colors.muted}
@@ -96,7 +109,7 @@ export function Input({
       ) : null}
     </View>
   )
-}
+})
 
 const styles = StyleSheet.create({
   container: {
@@ -120,11 +133,7 @@ const styles = StyleSheet.create({
   },
   fieldFocused: {
     borderColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.14,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 1,
+    backgroundColor: colors.primarySoft,
   },
   fieldError: {
     borderColor: colors.danger,

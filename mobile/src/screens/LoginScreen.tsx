@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   View,
+  type TextInputInstance,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Alert } from '../components/Alert'
@@ -24,6 +25,7 @@ export function LoginScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const passwordRef = useRef<TextInputInstance>(null)
 
   const handleSubmit = async () => {
     setError(null)
@@ -108,10 +110,13 @@ export function LoginScreen() {
               autoComplete="email"
               textContentType="emailAddress"
               returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => passwordRef.current?.focus()}
               testID="login-email"
             />
 
             <Input
+              ref={passwordRef}
               label="Contraseña"
               value={password}
               onChangeText={setPassword}
