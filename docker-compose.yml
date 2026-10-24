@@ -42,7 +42,7 @@
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-securebank}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-CHANGE_ME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:UmgAdminQA}
     ports:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"

@@ -37,6 +37,7 @@ export type PaymentSumAggregateOutputType = {
 export type PaymentMinAggregateOutputType = {
   id: string | null
   reference: string | null
+  idempotencyKey: string | null
   serviceName: string | null
   serviceReference: string | null
   amount: runtime.Decimal | null
@@ -50,6 +51,7 @@ export type PaymentMinAggregateOutputType = {
 export type PaymentMaxAggregateOutputType = {
   id: string | null
   reference: string | null
+  idempotencyKey: string | null
   serviceName: string | null
   serviceReference: string | null
   amount: runtime.Decimal | null
@@ -63,6 +65,7 @@ export type PaymentMaxAggregateOutputType = {
 export type PaymentCountAggregateOutputType = {
   id: number
   reference: number
+  idempotencyKey: number
   serviceName: number
   serviceReference: number
   amount: number
@@ -86,6 +89,7 @@ export type PaymentSumAggregateInputType = {
 export type PaymentMinAggregateInputType = {
   id?: true
   reference?: true
+  idempotencyKey?: true
   serviceName?: true
   serviceReference?: true
   amount?: true
@@ -99,6 +103,7 @@ export type PaymentMinAggregateInputType = {
 export type PaymentMaxAggregateInputType = {
   id?: true
   reference?: true
+  idempotencyKey?: true
   serviceName?: true
   serviceReference?: true
   amount?: true
@@ -112,6 +117,7 @@ export type PaymentMaxAggregateInputType = {
 export type PaymentCountAggregateInputType = {
   id?: true
   reference?: true
+  idempotencyKey?: true
   serviceName?: true
   serviceReference?: true
   amount?: true
@@ -212,6 +218,7 @@ export type PaymentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type PaymentGroupByOutputType = {
   id: string
   reference: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal
@@ -248,6 +255,7 @@ export type PaymentWhereInput = {
   NOT?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
   id?: Prisma.UuidFilter<"Payment"> | string
   reference?: Prisma.UuidFilter<"Payment"> | string
+  idempotencyKey?: Prisma.StringFilter<"Payment"> | string
   serviceName?: Prisma.StringFilter<"Payment"> | string
   serviceReference?: Prisma.StringFilter<"Payment"> | string
   amount?: Prisma.DecimalFilter<"Payment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -263,6 +271,7 @@ export type PaymentWhereInput = {
 export type PaymentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   serviceName?: Prisma.SortOrder
   serviceReference?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -278,9 +287,11 @@ export type PaymentOrderByWithRelationInput = {
 export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   reference?: string
+  accountId_idempotencyKey?: Prisma.PaymentAccountIdIdempotencyKeyCompoundUniqueInput
   AND?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
   OR?: Prisma.PaymentWhereInput[]
   NOT?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
+  idempotencyKey?: Prisma.StringFilter<"Payment"> | string
   serviceName?: Prisma.StringFilter<"Payment"> | string
   serviceReference?: Prisma.StringFilter<"Payment"> | string
   amount?: Prisma.DecimalFilter<"Payment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -291,11 +302,12 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
   account?: Prisma.XOR<Prisma.AccountScalarRelationFilter, Prisma.AccountWhereInput>
   transactions?: Prisma.TransactionListRelationFilter
-}, "id" | "reference">
+}, "id" | "reference" | "accountId_idempotencyKey">
 
 export type PaymentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   serviceName?: Prisma.SortOrder
   serviceReference?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -317,6 +329,7 @@ export type PaymentScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PaymentScalarWhereWithAggregatesInput | Prisma.PaymentScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"Payment"> | string
   reference?: Prisma.UuidWithAggregatesFilter<"Payment"> | string
+  idempotencyKey?: Prisma.StringWithAggregatesFilter<"Payment"> | string
   serviceName?: Prisma.StringWithAggregatesFilter<"Payment"> | string
   serviceReference?: Prisma.StringWithAggregatesFilter<"Payment"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"Payment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -330,6 +343,7 @@ export type PaymentScalarWhereWithAggregatesInput = {
 export type PaymentCreateInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -344,6 +358,7 @@ export type PaymentCreateInput = {
 export type PaymentUncheckedCreateInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -358,6 +373,7 @@ export type PaymentUncheckedCreateInput = {
 export type PaymentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -372,6 +388,7 @@ export type PaymentUpdateInput = {
 export type PaymentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -386,6 +403,7 @@ export type PaymentUncheckedUpdateInput = {
 export type PaymentCreateManyInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -399,6 +417,7 @@ export type PaymentCreateManyInput = {
 export type PaymentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -411,6 +430,7 @@ export type PaymentUpdateManyMutationInput = {
 export type PaymentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -431,9 +451,15 @@ export type PaymentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type PaymentAccountIdIdempotencyKeyCompoundUniqueInput = {
+  accountId: string
+  idempotencyKey: string
+}
+
 export type PaymentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   serviceName?: Prisma.SortOrder
   serviceReference?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -451,6 +477,7 @@ export type PaymentAvgOrderByAggregateInput = {
 export type PaymentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   serviceName?: Prisma.SortOrder
   serviceReference?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -464,6 +491,7 @@ export type PaymentMaxOrderByAggregateInput = {
 export type PaymentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   serviceName?: Prisma.SortOrder
   serviceReference?: Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -548,6 +576,7 @@ export type PaymentUpdateOneWithoutTransactionsNestedInput = {
 export type PaymentCreateWithoutAccountInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -561,6 +590,7 @@ export type PaymentCreateWithoutAccountInput = {
 export type PaymentUncheckedCreateWithoutAccountInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -603,6 +633,7 @@ export type PaymentScalarWhereInput = {
   NOT?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
   id?: Prisma.UuidFilter<"Payment"> | string
   reference?: Prisma.UuidFilter<"Payment"> | string
+  idempotencyKey?: Prisma.StringFilter<"Payment"> | string
   serviceName?: Prisma.StringFilter<"Payment"> | string
   serviceReference?: Prisma.StringFilter<"Payment"> | string
   amount?: Prisma.DecimalFilter<"Payment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -616,6 +647,7 @@ export type PaymentScalarWhereInput = {
 export type PaymentCreateWithoutTransactionsInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -629,6 +661,7 @@ export type PaymentCreateWithoutTransactionsInput = {
 export type PaymentUncheckedCreateWithoutTransactionsInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -658,6 +691,7 @@ export type PaymentUpdateToOneWithWhereWithoutTransactionsInput = {
 export type PaymentUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -671,6 +705,7 @@ export type PaymentUpdateWithoutTransactionsInput = {
 export type PaymentUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -684,6 +719,7 @@ export type PaymentUncheckedUpdateWithoutTransactionsInput = {
 export type PaymentCreateManyAccountInput = {
   id?: string
   reference?: string
+  idempotencyKey: string
   serviceName: string
   serviceReference: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -696,6 +732,7 @@ export type PaymentCreateManyAccountInput = {
 export type PaymentUpdateWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -709,6 +746,7 @@ export type PaymentUpdateWithoutAccountInput = {
 export type PaymentUncheckedUpdateWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -722,6 +760,7 @@ export type PaymentUncheckedUpdateWithoutAccountInput = {
 export type PaymentUncheckedUpdateManyWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   serviceName?: Prisma.StringFieldUpdateOperationsInput | string
   serviceReference?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -765,6 +804,7 @@ export type PaymentCountOutputTypeCountTransactionsArgs<ExtArgs extends runtime.
 export type PaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reference?: boolean
+  idempotencyKey?: boolean
   serviceName?: boolean
   serviceReference?: boolean
   amount?: boolean
@@ -781,6 +821,7 @@ export type PaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type PaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reference?: boolean
+  idempotencyKey?: boolean
   serviceName?: boolean
   serviceReference?: boolean
   amount?: boolean
@@ -795,6 +836,7 @@ export type PaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type PaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reference?: boolean
+  idempotencyKey?: boolean
   serviceName?: boolean
   serviceReference?: boolean
   amount?: boolean
@@ -809,6 +851,7 @@ export type PaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type PaymentSelectScalar = {
   id?: boolean
   reference?: boolean
+  idempotencyKey?: boolean
   serviceName?: boolean
   serviceReference?: boolean
   amount?: boolean
@@ -819,7 +862,7 @@ export type PaymentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "serviceName" | "serviceReference" | "amount" | "currency" | "status" | "accountId" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "idempotencyKey" | "serviceName" | "serviceReference" | "amount" | "currency" | "status" | "accountId" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
 export type PaymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
   transactions?: boolean | Prisma.Payment$transactionsArgs<ExtArgs>
@@ -841,6 +884,7 @@ export type $PaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     reference: string
+    idempotencyKey: string
     serviceName: string
     serviceReference: string
     amount: runtime.Decimal
@@ -1276,6 +1320,7 @@ export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends runtime.
 export interface PaymentFieldRefs {
   readonly id: Prisma.FieldRef<"Payment", 'String'>
   readonly reference: Prisma.FieldRef<"Payment", 'String'>
+  readonly idempotencyKey: Prisma.FieldRef<"Payment", 'String'>
   readonly serviceName: Prisma.FieldRef<"Payment", 'String'>
   readonly serviceReference: Prisma.FieldRef<"Payment", 'String'>
   readonly amount: Prisma.FieldRef<"Payment", 'Decimal'>
