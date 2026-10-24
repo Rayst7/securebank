@@ -1,39 +1,114 @@
-# SecureBank Mobile
+# SecureBank — App móvil
 
-Aplicación móvil de banca digital de SecureBank, construida con **React Native + Expo + TypeScript**. Consume la misma API REST que el frontend web (`/api`).
+Aplicación móvil de banca digital de SecureBank, hecha con **React Native +
+Expo + TypeScript**. Funciona en Android e iOS (con Expo Go o emulador) y
+consume la misma API REST que el frontend web (`/api` del backend NestJS).
+
+Permite a un cliente:
+
+- Iniciar y cerrar sesión; la sesión se restaura al abrir la app.
+- Ver su saldo total, sus cuentas y accesos rápidos.
+- Consultar movimientos por cuenta, con ingresos y egresos del período.
+- Transferir a una cuenta propia o a otra cuenta (por UUID), con recibo.
+- Pagar servicios.
+- Registrar y consultar beneficiarios.
+- Revisar el historial de transferencias y pagos con búsqueda y filtro.
+
+---
+
+## Tabla de contenido
+
+1. [Stack](#stack)
+2. [Requisitos](#requisitos)
+3. [Puesta en marcha](#puesta-en-marcha)
+4. [Configuración de la API](#configuración-de-la-api)
+5. [Comandos](#comandos)
+6. [Credenciales de prueba](#credenciales-de-prueba)
+7. [Pantallas y navegación](#pantallas-y-navegación)
+8. [Arquitectura](#arquitectura)
+9. [Autenticación y seguridad](#autenticación-y-seguridad)
+10. [Reglas de negocio en la app](#reglas-de-negocio-en-la-app)
+11. [Pruebas y evidencias](#pruebas-y-evidencias)
+12. [Limitaciones conocidas](#limitaciones-conocidas)
+13. [Solución de problemas](#solución-de-problemas)
+14. [Flujo de trabajo con Git](#flujo-de-trabajo-con-git)
+
+---
 
 ## Stack
 
-- Expo SDK 58 / React Native 0.88 / React 19
-- TypeScript estricto
-- React Navigation 7 (stack + bottom tabs)
-- `expo-secure-store` para el token y el usuario
-- `expo-crypto` para claves de idempotencia (UUID v4)
-- `@expo/vector-icons` (Ionicons)
+| Componente | Tecnología | Versión |
+|---|---|---|
+| Framework | Expo (managed workflow) | SDK 58 |
+| Runtime | React Native / React | 0.88 / 19 |
+| Lenguaje | TypeScript (modo estricto) | 6.0 |
+| Navegación | React Navigation: native stack + bottom tabs | 7 |
+| Almacenamiento seguro | `expo-secure-store` (Keychain / Keystore) | 58 |
+| Claves de idempotencia | `expo-crypto` (UUID v4) | 58 |
+| Detección del host | `expo-constants` | 58 |
+| Íconos | `@expo/vector-icons` (Ionicons) | 15 |
+| Vista web (solo desarrollo) | `react-native-web` | 0.21 |
+
+Identificadores de la app (`app.json`): nombre **SecureBank**, paquete
+`com.securebank.mobile` (Android e iOS), esquema `securebank://`, orientación
+vertical.
 
 ## Requisitos
 
-- Node.js 20 o superior
-- Backend de SecureBank en ejecución (`http://localhost:3000/api`)
-- Expo Go en un teléfono, un emulador de Android/iOS, o un navegador para la vista previa web
+- **Node.js 20** o superior y npm.
+- **Backend de SecureBank** corriendo y accesible en el puerto `3000`.
+- Una de estas opciones para ver la app:
+  - **Expo Go** en un teléfono Android o iOS (en la misma red Wi-Fi que la
+    computadora).
+  - **Emulador de Android** (Android Studio).
+  - **Simulador de iOS** (solo macOS con Xcode).
+  - Navegador, solo como vista previa de desarrollo.
 
-## Instalación
+## Puesta en marcha
+
+### 1. Levantar la infraestructura y el backend
+
+Desde la raíz del repositorio:
+
+```bash
+cp .env.example .env            # ajusta contraseñas y JWT_SECRET
+docker compose up -d            # PostgreSQL, Redis y RabbitMQ
+
+cd backend
+npm install
+npx prisma migrate deploy
+npm run start:dev               # API en http://localhost:3000/api
+```
+
+### 2. Levantar la app
+
+En otra terminal:
 
 ```bash
 cd mobile
 npm install
+npm start
 ```
+
+Luego:
+
+1. Escanea el código QR con **Expo Go** (Android) o con la **cámara** (iOS).
+2. Espera a que cargue el bundle.
+3. Inicia sesión con un usuario de prueba.
 
 ## Configuración de la API
 
-La app resuelve la URL de la API en este orden:
+La app decide a qué URL llamar en este orden (`src/services/api.ts`):
 
-1. `EXPO_PUBLIC_API_URL`, si está definida.
-2. La IP de la computadora que sirve Expo (`Constants.expoConfig.hostUri`), útil en Expo Go y en un teléfono físico.
-3. `http://10.0.2.2:3000/api` en el emulador de Android.
-4. `http://localhost:3000/api` en iOS Simulator y web.
+| Prioridad | Origen | Cuándo aplica |
+|---|---|---|
+| 1 | `EXPO_PUBLIC_API_URL` | Si está definida en `.env`, siempre gana. |
+| 2 | IP de la computadora que sirve Expo (`hostUri`) | Expo Go o teléfono físico en la misma red. |
+| 3 | `http://10.0.2.2:3000/api` | Emulador de Android (`10.0.2.2` es el host). |
+| 4 | `http://localhost:3000/api` | Simulador de iOS y vista web. |
 
-Copia `.env.example` a `.env` solo si necesitas forzar la URL:
+En la mayoría de los casos **no hace falta configurar nada**. Si necesitas
+forzar la URL (por ejemplo, el backend corre en otra máquina):
 
 ```bash
 cp .env.example .env
@@ -43,94 +118,203 @@ cp .env.example .env
 EXPO_PUBLIC_API_URL=http://192.168.1.100:3000/api
 ```
 
-> El teléfono y la computadora deben estar en la misma red. Si el backend corre en Docker o en otro equipo, verifica que el puerto `3000` sea accesible desde la red local.
+Reinicia Expo después de cambiar `.env` (`npm start -- --clear`).
 
-## Ejecutar
+> El teléfono y la computadora deben estar en la misma red, y el firewall debe
+> permitir conexiones entrantes al puerto `3000`. La URL que usa la app se
+> muestra en la pantalla **Más** y en los mensajes de error de conexión.
 
-```bash
-npm start          # abre Expo Dev Tools
-npm run android    # emulador o dispositivo Android
-npm run ios        # simulador iOS (macOS)
-npm run web        # vista previa en el navegador
-```
+## Comandos
 
-Con Expo Go:
-
-1. Ejecuta `npm start`.
-2. Escanea el código QR con Expo Go (Android) o con la cámara (iOS).
-3. Inicia sesión con un usuario de prueba.
+| Comando | Descripción |
+|---|---|
+| `npm start` | Inicia Metro y muestra el QR para Expo Go. |
+| `npm run android` | Abre la app en un emulador o dispositivo Android. |
+| `npm run ios` | Abre la app en el simulador de iOS (macOS). |
+| `npm run web` | Vista previa en el navegador (solo desarrollo). |
+| `npm run typecheck` | Verifica tipos con `tsc --noEmit`. |
+| `npx expo-doctor` | Revisa que dependencias y configuración sean compatibles con el SDK. |
+| `npx expo export --platform android` | Genera el bundle de Android en `dist/` para verificar que compila. |
 
 ## Credenciales de prueba
 
-| Usuario | Contraseña |
-|---|---|
-| `cliente@securebank.test` | `ClienteDemo2026!` |
-| `destino.transfer.test@securebank.test` | `DestinoDemo2026!` |
+| Usuario | Contraseña | Cuenta |
+|---|---|---|
+| `cliente@securebank.test` | `ClienteDemo2026!` | `SB-10000001` |
+| `destino.transfer.test@securebank.test` | `DestinoDemo2026!` | `SB-10000002` |
 
-Las credenciales de prueba solo se muestran en la pantalla de login cuando `__DEV__` es verdadero.
+Las credenciales solo aparecen en la pantalla de login cuando la app corre en
+modo desarrollo (`__DEV__`). En un build de producción no se muestran.
 
-## Pantallas
+## Pantallas y navegación
 
-- **Inicio:** saldo total, cuentas, estado y accesos rápidos.
-- **Movimientos:** cargos y abonos por cuenta, con ingresos/egresos del período.
-- **Transferir:** transferencia a una cuenta propia o a una cuenta externa por UUID, con recibo e idempotencia.
-- **Pagos:** pago de servicios con cuenta de cargo, referencia y monto.
-- **Más:** perfil, beneficiarios, historial, información de la API y cierre de sesión.
-- **Beneficiarios:** alta y consulta de contactos (pantalla del stack).
-- **Historial:** transferencias y pagos con búsqueda y filtro por estado (pantalla del stack).
+La app usa un **stack raíz** que decide qué mostrar según la sesión, y dentro de
+la sesión una **barra de pestañas** inferior.
+
+```
+RootNavigator (stack)
+├── Splash            # mientras se restaura la sesión guardada
+├── Login             # sin sesión
+└── con sesión
+    ├── App → MainTabs (pestañas)
+    │   ├── Inicio        (Dashboard)
+    │   ├── Movimientos   (Movements)
+    │   ├── Transferir    (Transfer)
+    │   ├── Pagos         (Payments)
+    │   └── Más           (More)
+    ├── Beneficiaries     # se abre como modal desde "Más"
+    └── History           # pantalla del stack desde "Más"
+```
+
+| Pantalla | Qué hace | Endpoints |
+|---|---|---|
+| Login | Correo y contraseña; muestra credenciales demo en desarrollo. | `POST /auth/login` |
+| Inicio | Saldo total, cuentas con estado y accesos rápidos. | `GET /accounts` |
+| Movimientos | Cargos y abonos por cuenta, con totales de ingresos y egresos. | `GET /accounts`, `GET /accounts/:id/transactions` |
+| Transferir | Cuenta propia o externa (UUID), validación, recibo e idempotencia. | `GET /accounts`, `POST /transfers` |
+| Pagos | Cuenta de cargo, servicio, referencia y monto. | `GET /accounts`, `GET /payments`, `POST /payments` |
+| Más | Perfil, accesos a beneficiarios e historial, URL de la API y cierre de sesión. | — |
+| Beneficiarios | Alta y lista de contactos. | `GET /beneficiaries`, `POST /beneficiaries` |
+| Historial | Transferencias y pagos con búsqueda y filtro por estado. | `GET /transfers`, `GET /payments` |
+
+Las pantallas recargan sus datos al volver a ellas (`useRefreshOnFocus`), por
+ejemplo, el saldo de Inicio se actualiza después de una transferencia.
 
 ## Arquitectura
 
 ```
 mobile/
-├── App.tsx
+├── index.ts                 # Registra el componente raíz en Expo
+├── App.tsx                  # SafeAreaProvider → AuthProvider → RootNavigator
+├── app.json                 # Configuración de Expo (nombre, íconos, plugins)
+├── assets/                  # Ícono, splash e íconos adaptativos de Android
 ├── src/
-│   ├── components/     # UI reutilizable (Button, Input, SelectField, Card…)
-│   ├── contexts/       # AuthProvider y contexto de autenticación
-│   ├── hooks/          # useAuth, useApiQuery, useRefreshOnFocus
-│   ├── navigation/     # stack raíz, tabs y tipos de rutas
-│   ├── screens/        # pantallas de la app
-│   ├── services/       # cliente HTTP y servicios por dominio
-│   ├── types/          # contrato de la API
-│   ├── utils/          # formato, validación, etiquetas e idempotencia
-│   └── theme.ts        # colores, espacios, radios y sombras
-├── app.json
-└── .env.example
+│   ├── navigation/
+│   │   ├── RootNavigator.tsx  # Splash, login o app según la sesión
+│   │   ├── MainTabs.tsx       # Barra de pestañas inferior
+│   │   └── types.ts           # Tipos de parámetros de cada ruta
+│   ├── screens/             # Una pantalla por flujo
+│   ├── components/          # UI reutilizable: AppText, Button, Input,
+│   │                        # SelectField, SegmentedControl, Card, Badge,
+│   │                        # Alert, Avatar, DataState, DetailRow, IconButton,
+│   │                        # KeyHint, Screen, ScreenHeader
+│   ├── contexts/            # AuthProvider y contexto de autenticación
+│   ├── hooks/               # useAuth, useApiQuery, useRefreshOnFocus
+│   ├── services/
+│   │   ├── api.ts           # Cliente HTTP y resolución de la URL
+│   │   ├── storage.ts       # SecureStore (nativo) / localStorage (web)
+│   │   └── *.service.ts     # Un servicio por módulo de la API
+│   ├── types/               # Tipos del contrato de la API
+│   ├── utils/               # format, validation, labels, idempotency
+│   └── theme.ts             # Colores, espacios, radios y sombras
+├── .env.example
+├── package.json
+└── tsconfig.json
 ```
+
+### Flujo de una petición
+
+```
+Pantalla ──► servicio (p. ej. transfers.service.ts)
+                │
+                ▼
+           apiRequest()  (services/api.ts)
+             • lee el token de SecureStore y agrega Authorization: Bearer
+             • corta la petición a los 15 s
+             • convierte errores del backend en ApiError(status, mensaje, detalles)
+             • si responde 401 → borra el token y llama al handler de AuthProvider
+                │
+                ▼
+           http://<host>:3000/api  (NestJS)
+```
+
+- **`useApiQuery`** devuelve `{ data, loading, error, reload }` para pintar los
+  estados de carga, error y vacío.
+- **`AuthProvider`** registra con `setUnauthorizedHandler` la función que
+  cierra la sesión; al cambiar `isAuthenticated`, el `RootNavigator` muestra el
+  login.
+- **`theme.ts`** concentra los colores y medidas; los componentes no usan
+  valores sueltos.
 
 ## Autenticación y seguridad
 
-- El login guarda el `access_token` y el usuario en `expo-secure-store` (Keychain en iOS, Keystore en Android).
-- En web se usa `localStorage` como respaldo para la vista previa.
-- Un `401` borra la sesión y devuelve al login automáticamente.
-- El token se adjunta como `Authorization: Bearer <token>` en cada solicitud autenticada.
+- El login guarda el `access_token` y el usuario en **`expo-secure-store`**
+  (Keychain en iOS, Keystore en Android), no en almacenamiento plano.
+- En la vista web se usa `localStorage` como respaldo, porque SecureStore no
+  existe en el navegador. Esa vista es solo para desarrollo.
+- Al abrir la app se muestra un splash mientras se restaura la sesión. Si falta
+  el token o el usuario, se limpian ambos y se muestra el login.
+- El token se envía como `Authorization: Bearer <token>` en cada petición
+  autenticada. Dura **1 hora** y no hay refresh token.
+- Un **401** borra la sesión y regresa al login automáticamente.
 - No se guardan contraseñas.
 
-## Reglas de transferencia
+## Reglas de negocio en la app
 
-El backend exige:
+### Montos
 
-1. La cuenta de origen debe pertenecer al usuario autenticado y estar `ACTIVE`.
+- Entre **0.01 y 1,000,000.00**, con máximo **dos decimales**
+  (`utils/validation.ts`). Acepta coma o punto decimal.
+- Se muestran con `Intl.NumberFormat('es-GT')` en la moneda de la cuenta (GTQ
+  por defecto).
+
+### Transferencias
+
+El backend exige, y la pantalla lo explica al usuario:
+
+1. La cuenta de origen debe pertenecer al usuario y estar `ACTIVE`.
 2. La cuenta destino debe existir y estar `ACTIVE`.
 3. Origen y destino deben ser diferentes.
 4. Ambas cuentas deben usar la misma moneda.
-5. El monto debe estar entre `0.01` y `1,000,000.00`, con máximo dos decimales.
-6. El saldo de la cuenta de origen debe cubrir el monto.
-7. Cada operación requiere una `idempotencyKey` única por cuenta de origen. Repetirla devuelve `409`.
-8. El destino se envía como `destinationAccountId` (**UUID**). Los beneficiarios son solo una agenda: el endpoint no acepta `beneficiaryId` ni `accountNumber`.
+5. El saldo de origen debe cubrir el monto.
+6. El destino se envía como `destinationAccountId` (**UUID**). Para cuentas
+   externas, la app valida el formato UUID antes de enviar.
 
-La app conserva la clave de idempotencia si la solicitud falla por red, timeout o `409`, y solo genera una nueva después de una operación exitosa. Si hay `409`, se debe revisar el historial antes de reintentar.
+### Idempotencia (evitar cobros duplicados)
 
-## Limitaciones conocidas
+- Cada operación lleva una `idempotencyKey` generada con `expo-crypto`.
+- Si la petición falla por red, timeout o `409`, se **conserva la misma clave**
+  para el reintento.
+- Solo se genera una clave nueva después de una operación exitosa (al pulsar
+  "nueva transferencia" tras el recibo).
+- Un `409` indica que la operación ya se registró: revisa el historial antes
+  de reintentar.
 
-- La API no tiene búsqueda por número de cuenta ni por beneficiario; la transferencia externa requiere el UUID de la cuenta destino.
-- No hay refresh token ni `GET /me`; la sesión se reconstruye desde el almacenamiento local.
-- Los listados no están paginados; el historial se filtra en el cliente.
-- El backend no habilita CORS. La vista web de Expo requiere un proxy o ejecutar Chrome con la seguridad web deshabilitada solo para pruebas locales. En Android/iOS no aplica CORS.
-- En builds independientes, Android/iOS pueden bloquear HTTP en texto plano. Para producción usa HTTPS y una URL de API segura.
-- La vista web es solo una ayuda de desarrollo; la app está pensada para Android/iOS.
+## Pruebas y evidencias
 
-## Verificación
+### Selectores para pruebas E2E
+
+Los elementos clave tienen `testID` (útil para Maestro o Detox):
+
+| Flujo | `testID` |
+|---|---|
+| Login | `login-email`, `login-password`, `login-submit` |
+| Transferencia | `transfer-submit` |
+| Pagos | `payment-submit` |
+
+### Dónde va cada cosa
+
+| Qué | Carpeta |
+|---|---|
+| Flujos E2E móviles (Maestro) | `tests/maestro/` |
+| Capturas de los flujos | `reports/mobile/` |
+
+### Flujos verificados
+
+Probados contra el backend local (con la vista web de Expo en lugar del
+emulador); las capturas están en `reports/mobile/`:
+
+- Login, restauración de sesión, cierre de sesión y reingreso.
+- Inicio con saldo total y cuentas.
+- Transferencia entre cuentas propias y a cuenta externa por UUID, con recibo.
+- Movimientos por cuenta con ingresos, egresos y detalle.
+- Alta y listado de beneficiarios.
+- Pago de servicio con actualización de saldo.
+- Historial con búsqueda y filtro por estado.
+
+Los datos de prueba se eliminaron al terminar y los saldos se restauraron.
+
+### Verificación antes de un PR
 
 ```bash
 npm run typecheck
@@ -138,22 +322,39 @@ npx expo-doctor
 npx expo export --platform android
 ```
 
-Flujos verificados contra el backend local (vista web de Expo como sustituto del emulador):
+## Limitaciones conocidas
 
-- Login, restauración de sesión, cierre de sesión y reingreso.
-- Dashboard con saldo total y cuentas.
-- Transferencia entre cuentas propias y a una cuenta externa por UUID, con recibo e idempotencia.
-- Movimientos por cuenta con ingresos, egresos y detalle.
-- Alta y listado de beneficiarios.
-- Pago de servicio con actualización de saldo.
-- Historial de transferencias y pagos con búsqueda y filtro por estado.
+1. No hay búsqueda por número de cuenta ni por beneficiario: transferir a otra
+   cuenta requiere su UUID. Los beneficiarios son solo una agenda.
+2. No hay refresh token ni `GET /me`; la sesión se reconstruye desde
+   SecureStore y dura 1 hora.
+3. Los listados no están paginados; el historial se filtra en el teléfono.
+4. El backend no habilita CORS, así que la **vista web** de Expo no puede
+   llamar a la API sin un proxy. En Android e iOS no aplica CORS.
+5. La API corre por HTTP. Los builds independientes de Android/iOS bloquean HTTP
+   en texto plano; para producción se necesita HTTPS.
+6. La vista web es solo una ayuda de desarrollo; la app está pensada para
+   Android e iOS.
 
-Los datos de prueba se eliminaron al terminar y los saldos se restauraron.
+## Solución de problemas
 
-## Ramas
+| Síntoma | Causa probable | Qué hacer |
+|---|---|---|
+| "No se pudo conectar con el servidor (URL)" | El teléfono no llega a la API. | Misma red Wi-Fi, backend corriendo, puerto 3000 abierto en el firewall. Prueba la URL en el navegador del teléfono. |
+| Funciona en el emulador pero no en el teléfono | La URL detectada no es la IP LAN correcta. | Define `EXPO_PUBLIC_API_URL` con la IP de tu computadora y reinicia con `npm start -- --clear`. |
+| El QR no conecta con Expo Go | Red con aislamiento de clientes o VPN. | Usa `npx expo start --tunnel` o conecta ambos equipos a otra red. |
+| Error de CORS en `npm run web` | El backend no permite el origen del navegador. | Prueba en Android/iOS, o habilita CORS solo en local. |
+| Los cambios en `.env` no se aplican | Metro guarda la caché del bundle. | `npm start -- --clear`. |
+| Me saca al login de repente | El JWT expiró (1 hora). | Inicia sesión otra vez. |
+| 409 al transferir o pagar | La clave de idempotencia ya se usó. | Revisa el historial antes de reintentar. |
+
+## Flujo de trabajo con Git
 
 - `main`: producción (protegida).
 - `develop`: integración.
 - `feature/mobile`: desarrollo de esta app.
-
-Los cambios se integran a `develop` mediante Pull Request.
+- Los cambios entran a `develop` mediante Pull Request.
+- Commits con Conventional Commits:
+  `feat(mobile): ...`, `fix(mobile): ...`, `test(mobile): ...`.
+- No se suben `.env`, `node_modules/`, `dist/` ni las carpetas nativas
+  `android/` e `ios/`.
