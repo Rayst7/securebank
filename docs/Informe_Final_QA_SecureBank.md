@@ -6,8 +6,8 @@
 **Facultad / carrera:** Ingeniería en Sistemas  
 **Curso:** 048 · Aseguramiento de la Calidad del Software  
 **Proyecto:** SecureBank · Proyecto final integrador de QA / DevSecOps  
-**Responsable de QA:** [Completar nombre y carné antes de la entrega]  
-**Equipo de desarrollo:** [Completar integrantes y roles autorizados]  
+**Responsable de QA:** [Eddy Botzoc]  
+**Equipo de desarrollo:** [Angel Chali, Pedro Boton, Raymid Caal, Eddy Botzoc]  
 **Rama de trabajo:** `qa/securebank-automatizacion`  
 **Repositorio:** `https://github.com/Rayst7/securebank`  
 **Commit exacto evaluado:** **Pendiente de registrar** (SHA de las ejecuciones)  
