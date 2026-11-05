@@ -1,0 +1,49 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-09-v2 - Cierre de sesion
+---
+- stopApp
+- openLink: ${EXPO_URL}
+
+- runFlow:
+    when:
+      visible:
+        id: login-submit
+    commands:
+      - tapOn:
+          id: login-email
+      - inputText: ${MAESTRO_QA_USER}
+      - tapOn:
+          id: login-password
+      - inputText: ${MAESTRO_QA_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: login-submit
+
+- extendedWaitUntil:
+    visible: "^M.s$"
+    timeout: 30000
+
+- takeScreenshot: TC-MOB-09-v2-autenticado
+
+- tapOn: "^M.s$"
+
+- extendedWaitUntil:
+    visible: "^Cerrar sesi.n$"
+    timeout: 20000
+
+- takeScreenshot: TC-MOB-09-v2-menu
+
+- tapOn: "^Cerrar sesi.n$"
+
+- assertVisible: "^Cancelar$"
+
+- tapOn: "^Cerrar sesi.n$"
+
+- extendedWaitUntil:
+    visible:
+      id: login-submit
+    timeout: 30000
+
+- assertVisible: "Inicia sesi.n"
+
+- takeScreenshot: TC-MOB-09-v2-sesion-cerrada

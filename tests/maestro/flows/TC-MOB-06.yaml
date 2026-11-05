@@ -1,0 +1,25 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-06 - Mostrar y ocultar contrasena
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+
+- tapOn:
+    id: "login-password"
+- inputText: "ClaveTemporal123"
+- hideKeyboard
+
+- assertVisible: "Mostrar contraseña"
+- takeScreenshot: TC-MOB-06-contrasena-oculta
+
+- tapOn: "Mostrar contraseña"
+- assertVisible: "Ocultar contraseña"
+- assertNotVisible: "Mostrar contraseña"
+- takeScreenshot: TC-MOB-06-contrasena-visible
+
+- tapOn: "Ocultar contraseña"
+- assertVisible: "Mostrar contraseña"
+- takeScreenshot: TC-MOB-06-contrasena-oculta-nuevamente

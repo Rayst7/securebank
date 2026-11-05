@@ -1,0 +1,22 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-16-v8 - Consulta y actualizacion de movimientos
+---
+- extendedWaitUntil:
+    visible: ".*Consulta los cargos y abonos de cada cuenta.*"
+    timeout: 20000
+
+- assertVisible: ".*Ingresos.*"
+- assertVisible: ".*Egresos.*"
+
+- takeScreenshot: TC-MOB-16-v8-antes
+
+- tapOn: "Actualizar movimientos"
+
+- extendedWaitUntil:
+    visible: ".*Consulta los cargos y abonos de cada cuenta.*"
+    timeout: 20000
+
+- assertVisible: ".*Ingresos.*"
+- assertVisible: ".*Egresos.*"
+
+- takeScreenshot: TC-MOB-16-v8-despues

@@ -1,0 +1,28 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-08-v2 - Rechazo de credenciales invalidas
+---
+- stopApp
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible:
+      id: login-submit
+    timeout: 90000
+
+- tapOn:
+    id: login-email
+- inputText: "qa.inexistente@example.invalid"
+
+- tapOn:
+    id: login-password
+- inputText: "ClaveInvalida2026"
+- hideKeyboard
+
+- tapOn:
+    id: login-submit
+
+- extendedWaitUntil:
+    visible: ".*No se pudo iniciar sesi.*"
+    timeout: 20000
+
+- takeScreenshot: TC-MOB-08-v2-rechazo

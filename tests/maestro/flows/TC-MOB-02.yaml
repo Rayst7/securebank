@@ -1,0 +1,12 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-02 - Campo de correo electronico
+---
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+- tapOn: "tu@correo.com"
+- inputText: "qa.maestro@example.invalid"
+- hideKeyboard
+- assertVisible: "Ingresar"
+- takeScreenshot: TC-MOB-02-correo

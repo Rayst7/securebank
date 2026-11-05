@@ -1,0 +1,36 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-18 - Consulta y formulario de beneficiarios
+---
+- extendedWaitUntil:
+    visible: "^M.s$"
+    timeout: 30000
+
+- tapOn: "^M.s$"
+
+- extendedWaitUntil:
+    visible: "Tu cuenta y opciones adicionales."
+    timeout: 20000
+
+- tapOn: "^Beneficiarios$"
+
+- extendedWaitUntil:
+    visible: ".*Guarda las cuentas que usas con frecuencia.*"
+    timeout: 30000
+
+- assertVisible: "^Agregar$"
+
+- takeScreenshot: TC-MOB-18-listado
+
+- tapOn: "^Agregar$"
+
+- extendedWaitUntil:
+    visible: "Nuevo beneficiario"
+    timeout: 15000
+
+- takeScreenshot: TC-MOB-18-formulario
+
+- tapOn: "^Cancelar$"
+
+- assertNotVisible: "Nuevo beneficiario"
+
+- takeScreenshot: TC-MOB-18-final

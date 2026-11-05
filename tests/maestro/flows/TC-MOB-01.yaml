@@ -1,0 +1,11 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-01 - Pantalla de inicio de sesion
+---
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+- assertVisible: "Correo electrónico"
+- assertVisible: "Contraseña"
+- assertVisible: "Ingresar"
+- takeScreenshot: TC-MOB-01-login

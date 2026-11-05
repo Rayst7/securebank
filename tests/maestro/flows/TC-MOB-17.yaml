@@ -1,0 +1,22 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-17 - Consulta de historial bancario
+---
+- extendedWaitUntil:
+    visible: "^M.s$"
+    timeout: 30000
+
+- tapOn: "^M.s$"
+
+- extendedWaitUntil:
+    visible: "Tu cuenta y opciones adicionales."
+    timeout: 20000
+
+- tapOn: "^Historial$"
+
+- extendedWaitUntil:
+    visible: ".*Consulta todas tus transferencias y pagos registrados.*"
+    timeout: 30000
+
+- assertVisible: "Actualizar historial"
+
+- takeScreenshot: TC-MOB-17-historial
