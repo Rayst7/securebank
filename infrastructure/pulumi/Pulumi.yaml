@@ -1,0 +1,6 @@
+name: securebank
+description: SecureBank AWS infrastructure (active deployment)
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm

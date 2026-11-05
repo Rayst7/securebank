@@ -1,0 +1,6 @@
+---
+- name: Preparar host Ubuntu para SecureBank
+  hosts: securebank
+  become: true
+  roles:
+    - docker
