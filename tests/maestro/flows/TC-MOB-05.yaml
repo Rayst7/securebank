@@ -1,0 +1,14 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-05 - Contrasena requerida
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+- tapOn: "tu@correo.com"
+- inputText: "qa.maestro@example.com"
+- hideKeyboard
+- tapOn: "Ingresar"
+- assertVisible: ".*La contrase.*a debe tener al menos 8 caracteres.*"
+- takeScreenshot: TC-MOB-05-contrasena-vacia

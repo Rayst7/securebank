@@ -1,0 +1,538 @@
+{
+  "info": {
+    "name": "SecureBank QA - ejecución automatizada y negativa",
+    "description": "Importar en Insomnia; crear entorno QA con credenciales sintéticas. Orden importante: login A, cuentas A, login B, cuentas B, casos de prueba. No incluye operaciones que cambien saldos. Ejecutar en ambiente de pruebas autorizado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "API-01 login válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "API-01 login válido",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{qaEmail}}\", \"password\": \"{{qaPassword}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-01 login válido', () => pm.response.to.have.status(200));",
+              "pm.test('JWT emitido', () => pm.expect(pm.response.json().access_token).to.be.a('string'));",
+              "pm.environment.set('accessToken', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-02 cuentas propias",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts"
+          ]
+        },
+        "description": "API-02 cuentas propias"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-02 cuentas propias', () => pm.response.to.have.status(200));",
+              "pm.test('Cuentas presentes', () => pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty);",
+              "pm.environment.set('sourceAccountId', pm.response.json()[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-03 movimientos propios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/{{sourceAccountId}}/transactions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "{{sourceAccountId}}",
+            "transactions"
+          ]
+        },
+        "description": "API-03 movimientos propios"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-03 movimientos propios', () => pm.response.to.have.status(200));",
+              "pm.test('Lista de movimientos', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-04 login segundo usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "API-04 login segundo usuario",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{qaOtherEmail}}\", \"password\": \"{{qaOtherPassword}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-04 login segundo usuario', () => pm.response.to.have.status(200));",
+              "pm.environment.set('otherToken', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-05 cuentas segundo usuario",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{otherToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts"
+          ]
+        },
+        "description": "API-05 cuentas segundo usuario"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-05 cuentas segundo usuario', () => pm.response.to.have.status(200));",
+              "pm.test('Cuenta destino presente', () => pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty);",
+              "pm.environment.set('destAccountId', pm.response.json()[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SEC-01 sin JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts"
+          ]
+        },
+        "description": "SEC-01 sin JWT"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401 - SEC-01 sin JWT', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SEC-02 IDOR cuenta ajena",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/accounts/{{destAccountId}}/transactions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "accounts",
+            "{{destAccountId}}",
+            "transactions"
+          ]
+        },
+        "description": "SEC-02 IDOR cuenta ajena"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404 - SEC-02 IDOR cuenta ajena', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SEC-03 transferencia desde cuenta ajena",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transfers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "transfers"
+          ]
+        },
+        "description": "SEC-03 transferencia desde cuenta ajena",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"sourceAccountId\": \"{{destAccountId}}\", \"destinationAccountId\": \"{{sourceAccountId}}\", \"amount\": 1, \"idempotencyKey\": \"qa-sec-prohibido\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403 - SEC-03 transferencia desde cuenta ajena', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEG-01 transferencia monto negativo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/transfers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "transfers"
+          ]
+        },
+        "description": "NEG-01 transferencia monto negativo",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"sourceAccountId\": \"{{sourceAccountId}}\", \"destinationAccountId\": \"{{destAccountId}}\", \"amount\": -1, \"idempotencyKey\": \"qa-negativo\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400 - NEG-01 transferencia monto negativo', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEG-02 pago monto negativo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/payments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "payments"
+          ]
+        },
+        "description": "NEG-02 pago monto negativo",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"accountId\": \"{{sourceAccountId}}\", \"serviceName\": \"QA\", \"serviceReference\": \"REF-NEG\", \"amount\": -1, \"idempotencyKey\": \"qa-pago-negativo\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400 - NEG-02 pago monto negativo', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-06 beneficiarios GET",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/beneficiaries",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "beneficiaries"
+          ]
+        },
+        "description": "API-06 beneficiarios GET"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 - API-06 beneficiarios GET', () => pm.response.to.have.status(200));",
+              "pm.test('Beneficiarios es array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEG-03 beneficiario invalido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/beneficiaries",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "beneficiaries"
+          ]
+        },
+        "description": "NEG-03 beneficiario invalido",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"alias\": \"\", \"accountNumber\": \"INVALIDA!\", \"bankName\": \"\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400 - NEG-03 beneficiario invalido', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3000"
+    },
+    {
+      "key": "qaEmail",
+      "value": ""
+    },
+    {
+      "key": "qaPassword",
+      "value": ""
+    },
+    {
+      "key": "qaOtherEmail",
+      "value": ""
+    },
+    {
+      "key": "qaOtherPassword",
+      "value": ""
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-04 - Correo electronico invalido
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+- tapOn: "tu@correo.com"
+- inputText: "correo-invalido"
+- hideKeyboard
+- tapOn: "Ingresar"
+- assertVisible: ".*Ingresa un correo electr.*nico v.*lido.*"
+- takeScreenshot: TC-MOB-04-correo-invalido

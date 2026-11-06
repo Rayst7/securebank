@@ -1,0 +1,23 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-11 - Consulta de movimientos
+---
+- stopApp
+- openLink: ${EXPO_URL}
+
+- runFlow:
+    when:
+      visible:
+        id: login-submit
+    file: _autenticar-qa.yaml
+
+- extendedWaitUntil:
+    visible: "^M.s$"
+    timeout: 45000
+
+- tapOn: "^Movimientos$"
+
+- extendedWaitUntil:
+    visible: ".*Consulta los cargos y abonos de cada cuenta.*"
+    timeout: 30000
+
+- takeScreenshot: TC-MOB-11-pantalla

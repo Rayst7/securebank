@@ -1,0 +1,9 @@
+ID,Riesgo,Probabilidad_1a5,Impacto_1a5,Severidad_Inicial,Prueba_mitigacion,Responsable,Estado
+R-01,Doble descuento en transferencias simultáneas,4,5,20,API BANK-01 BANK-02,QA + Backend,ABIERTO
+R-02,IDOR y acceso a movimientos ajenos,3,5,15,SEC-02 SEC-03,QA + Backend,ABIERTO
+R-03,Falla Redis impide login sin degradación definida,3,4,12,INT-02,QA + Backend,ABIERTO
+R-04,Evento perdido entre commit DB y RabbitMQ,4,5,20,INT-03 + simulación fallo del broker,QA + Backend,ABIERTO
+R-05,Reintento RabbitMQ duplica notificaciones,3,4,12,INT-03 DLQ + redelivery,QA + Backend,ABIERTO
+R-06,App móvil ausente impide pruebas obligatorias,5,4,20,MOB-01 hasta MOB-08,Equipo móvil + QA,BLOQUEADO
+R-07,Despliegue sin quality gates,4,5,20,Pipeline fallo forzado y rechazo,DevOps + QA,ABIERTO
+R-08,Dependencias vulnerables o secretos filtrados,3,5,15,npm audit SCA SAST y secret scanning,DevSecOps + QA,ABIERTO

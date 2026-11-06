@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "SecureBank",
+    "slug": "securebank-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "securebank",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#f2f5f9",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.securebank.mobile"
+    },
+    "android": {
+      "package": "com.securebank.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#e6f4f1",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}

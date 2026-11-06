@@ -1,0 +1,30 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-07 - Autenticacion correcta
+---
+- stopApp
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible:
+      id: login-submit
+    timeout: 90000
+
+- tapOn:
+    id: login-email
+- inputText: ${MAESTRO_QA_USER}
+
+- tapOn:
+    id: login-password
+- inputText: ${MAESTRO_QA_PASSWORD}
+- hideKeyboard
+
+- tapOn:
+    id: login-submit
+
+- extendedWaitUntil:
+    notVisible:
+      id: login-submit
+    timeout: 30000
+
+- assertNotVisible: "Inicia sesión"
+- takeScreenshot: TC-MOB-07-autenticado

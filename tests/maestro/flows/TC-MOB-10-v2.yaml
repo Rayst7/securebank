@@ -1,0 +1,23 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-10-v2 - Panel principal y resumen de cuentas
+---
+- stopApp
+- openLink: ${EXPO_URL}
+
+- runFlow:
+    when:
+      visible:
+        id: login-submit
+    file: _autenticar-qa.yaml
+
+- extendedWaitUntil:
+    visible: "^M.s$"
+    timeout: 45000
+
+- tapOn: "^Inicio$"
+
+- extendedWaitUntil:
+    visible: ".*Este es el resumen de tus cuentas en SecureBank.*"
+    timeout: 30000
+
+- takeScreenshot: TC-MOB-10-v2-panel-principal

@@ -1,0 +1,12 @@
+﻿appId: host.exp.exponent
+name: TC-MOB-03 - Validacion de formulario vacio
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- extendedWaitUntil:
+    visible: "Inicia sesión"
+    timeout: 90000
+- tapOn: "Ingresar"
+- assertVisible: ".*Ingresa un correo electr.*nico v.*lido.*"
+- assertVisible: "Inicia sesión"
+- takeScreenshot: TC-MOB-03-campos-vacios
