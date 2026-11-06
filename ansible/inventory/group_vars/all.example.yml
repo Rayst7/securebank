@@ -1,0 +1,15 @@
+# Copy to inventory/group_vars/all.yml and encrypt secrets with ansible-vault
+# before use. Ansible loads group_vars next to the inventory file; the playbooks
+# live in ansible/playbooks, so ansible/group_vars would not be loaded.
+securebank_environment: qa
+securebank_root: /opt/securebank
+securebank_release_dir: /opt/securebank/app
+
+# Values below are intentionally empty. Supply them through an Ansible Vault
+# file or Jenkins credentials; never commit application credentials.
+securebank_postgres_db: securebank
+securebank_postgres_user: securebank
+securebank_postgres_password: ""
+securebank_rabbitmq_user: securebank
+securebank_rabbitmq_password: ""
+securebank_jwt_secret: ""

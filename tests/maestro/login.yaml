@@ -1,0 +1,23 @@
+# Maestro flow for SecureBank mobile.
+#
+# Prerequisites:
+#   - Android emulator/device connected.
+#   - SecureBank installed with appId com.securebank.mobile.
+#   - Backend reachable from the device and demo users seeded.
+#
+# Run:
+#   maestro test tests/maestro/login.yaml
+appId: com.securebank.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Inicia sesión"
+- tapOn:
+    id: "login-email"
+- inputText: "cliente@securebank.test"
+- tapOn:
+    id: "login-password"
+- inputText: "ClienteDemo2026!"
+- tapOn:
+    id: "login-submit"
+- assertVisible: "SALDO TOTAL"

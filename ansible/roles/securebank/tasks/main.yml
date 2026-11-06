@@ -1,0 +1,108 @@
+---
+- name: Validar variables secretas necesarias
+  ansible.builtin.assert:
+    that:
+      - securebank_postgres_password | default('') | length > 0
+      - securebank_rabbitmq_password | default('') | length > 0
+      - securebank_jwt_secret | default('') | length >= 32
+    fail_msg: "Configure las credenciales en Ansible Vault o Jenkins antes del despliegue."
+
+- name: Crear directorio raíz de SecureBank
+  ansible.builtin.file:
+    path: "{{ securebank_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Crear directorio del release
+  ansible.builtin.file:
+    path: "{{ securebank_release_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Verificar que Jenkins haya preparado el release
+  ansible.builtin.stat:
+    path: "{{ securebank_release_dir }}/docker-compose.yml"
+  register: securebank_compose_file
+
+- name: Fallar si no existe el release preparado
+  ansible.builtin.assert:
+    that: securebank_compose_file.stat.exists
+    fail_msg: "No existe docker-compose.yml en el release. Sincronice el repositorio antes de desplegar."
+
+- name: Crear archivo .env de despliegue sin exponerlo en logs
+  ansible.builtin.template:
+    src: securebank.env.j2
+    dest: "{{ securebank_release_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Validar la configuración de Docker Compose antes de desplegar
+  ansible.builtin.command:
+    cmd: docker compose --profile app --profile tools config --quiet
+    chdir: "{{ securebank_release_dir }}"
+  environment:
+    COMPOSE_BAKE: "false"
+  changed_when: false
+
+- name: Construir la imagen de migraciones Prisma
+  ansible.builtin.command:
+    cmd: docker compose --profile tools build migrate
+    chdir: "{{ securebank_release_dir }}"
+  environment:
+    COMPOSE_BAKE: "false"
+  register: securebank_migrate_build
+  changed_when: "'Built' in securebank_migrate_build.stdout"
+
+- name: Aplicar migraciones Prisma dentro de Compose
+  ansible.builtin.command:
+    cmd: docker compose --profile tools run --rm --pull never migrate
+    chdir: "{{ securebank_release_dir }}"
+  environment:
+    COMPOSE_BAKE: "false"
+  register: securebank_migrations
+  changed_when: "'No pending migrations' not in securebank_migrations.stdout"
+  no_log: true
+
+- name: Iniciar servicios de aplicación
+  ansible.builtin.command:
+    cmd: docker compose --profile app up -d --build
+    chdir: "{{ securebank_release_dir }}"
+  environment:
+    COMPOSE_BAKE: "false"
+  register: securebank_up
+  changed_when: "'Started' in securebank_up.stdout or 'Created' in securebank_up.stdout"
+
+- name: Mostrar estado de los contenedores
+  ansible.builtin.command:
+    cmd: docker compose --profile app ps
+    chdir: "{{ securebank_release_dir }}"
+  register: securebank_ps
+  changed_when: false
+
+- name: Esperar a que Nginx responda en el puerto público
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ securebank_frontend_port }}/"
+    status_code: 200
+    timeout: 10
+  register: securebank_frontend_health
+  until: securebank_frontend_health.status == 200
+  retries: "{{ securebank_healthcheck_retries }}"
+  delay: "{{ securebank_healthcheck_delay }}"
+  changed_when: false
+
+- name: Verificar el proxy /api a través de Nginx
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ securebank_frontend_port }}/api/"
+    status_code: 200
+    timeout: 10
+  register: securebank_api_health
+  until: securebank_api_health.status == 200
+  retries: 6
+  delay: 5
+  changed_when: false

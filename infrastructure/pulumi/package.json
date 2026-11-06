@@ -1,0 +1,19 @@
+{
+  "name": "securebank-infrastructure",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pulumi/TypeScript infrastructure for SecureBank on AWS",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pulumi/aws": "^7.53.0",
+    "@pulumi/pulumi": "^3.274.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  }
+}

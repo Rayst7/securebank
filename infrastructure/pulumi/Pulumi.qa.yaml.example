@@ -1,0 +1,16 @@
+# Copy to Pulumi.qa.yaml locally. Real stack files are ignored by Git.
+config:
+  aws:region: us-east-1
+  securebank:projectName: securebank
+  securebank:environment: qa
+  securebank:vpcCidr: 10.20.0.0/16
+  securebank:subnetCidr: 10.20.10.0/24
+  securebank:instanceType: t3.medium
+
+  # Replace with the public IP of the administrator, never 0.0.0.0/0.
+  # Remove the key to keep SSH closed in the security group.
+  securebank:allowedSshCidr: 203.0.113.10/32
+
+  # Public key only (contents of ~/.ssh/securebank_qa.pub).
+  # Do not place a private key in this file or repository.
+  securebank:sshPublicKey: ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY securebank-qa

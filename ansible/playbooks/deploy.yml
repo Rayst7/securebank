@@ -1,0 +1,6 @@
+---
+- name: Desplegar SecureBank mediante Docker Compose
+  hosts: securebank
+  become: true
+  roles:
+    - securebank

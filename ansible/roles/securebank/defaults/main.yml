@@ -1,0 +1,20 @@
+---
+# Deployment paths and non-secret database identifiers. Secrets have no
+# defaults and are validated by the role before anything is written.
+securebank_root: /opt/securebank
+securebank_release_dir: /opt/securebank/app
+securebank_postgres_db: securebank
+securebank_postgres_user: securebank
+securebank_rabbitmq_user: securebank
+
+# Public entry point on the AWS EC2 instance. Nginx listens on port 80 and proxies
+# /api to the backend over the private Compose network.
+securebank_frontend_bind_address: "0.0.0.0"
+securebank_frontend_port: 80
+
+# The API is not published publicly; only Nginx needs to reach it.
+securebank_backend_bind_address: "127.0.0.1"
+securebank_backend_port: 3000
+
+securebank_healthcheck_retries: 36
+securebank_healthcheck_delay: 5

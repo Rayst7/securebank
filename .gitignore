@@ -19,6 +19,25 @@ coverage/
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+tfplan
+*.tfplan
+tfplan.*
+crash.log
+
+
+# Pulumi
+.pulumi/
+infrastructure/pulumi/bin/
+Pulumi.*.yaml
+!Pulumi.*.yaml.example
+
+# Ansible and deployment credentials
+ansible/inventory/hosts.yml
+ansible/inventory/group_vars/all.yml
+ansible/group_vars/all.yml
+ansible/.vault_pass
+*.retry
+*.pem
 
 # Editores y sistema operativo
 .vscode/

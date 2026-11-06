@@ -4,9 +4,9 @@
     container_name: securebank-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-securebank}
-      POSTGRES_USER: ${POSTGRES_USER:-securebank}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB es obligatorio. Defínelo en el archivo .env local}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER es obligatorio. Defínelo en el archivo .env local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio. Defínelo en el archivo .env local}
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
@@ -41,8 +41,8 @@
     container_name: securebank-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-securebank}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:UmgAdminQA}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER es obligatorio. Defínelo en el archivo .env local}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD es obligatorio. Defínelo en el archivo .env local}
     ports:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"
@@ -53,6 +53,89 @@
       interval: 15s
       timeout: 10s
       retries: 5
+    networks:
+      - securebank-net
+
+  # Application services are opt-in for local development. Start the complete
+  # stack with: docker compose --profile app up -d --build
+  backend:
+    profiles: ["app"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: securebank-backend:local
+    container_name: securebank-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER es obligatorio. Defínelo en el archivo .env local}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio. Defínelo en el archivo .env local}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB es obligatorio. Defínelo en el archivo .env local}?schema=public
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:?RABBITMQ_USER es obligatorio. Defínelo en el archivo .env local}:${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD es obligatorio. Defínelo en el archivo .env local}@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio. Defínelo en el archivo .env local}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+    ports:
+      # Local development keeps the API bound to loopback. QA/production sets
+      # BACKEND_BIND_ADDRESS only if an external load balancer needs direct
+      # access; the normal public entry point is the frontend Nginx proxy.
+      - "${BACKEND_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - securebank-net
+
+  # Run explicitly before a QA/production app deployment. It uses the build
+  # stage because the Prisma CLI is intentionally omitted from the runtime image.
+  migrate:
+    profiles: ["tools"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: migrate
+    image: securebank-backend-migrate:local
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER es obligatorio. Defínelo en el archivo .env local}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio. Defínelo en el archivo .env local}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB es obligatorio. Defínelo en el archivo .env local}?schema=public
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - securebank-net
+
+  frontend:
+    profiles: ["app"]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    image: securebank-frontend:local
+    container_name: securebank-frontend
+    restart: unless-stopped
+    ports:
+      # Local development exposes :8080 on loopback. The Ansible deployment
+      # overrides this with 0.0.0.0:80 so Azure NSG rules can reach Nginx.
+      - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - securebank-net
 
